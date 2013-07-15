@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="zen.js : Zen player" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>zen.js</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/ruicirilo/zen-player">View on GitHub</a>
+
+          <h1 id="project_title">zen.js</h1>
+          <h2 id="project_tagline">Zen player</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/ruicirilo/zen-player/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ruicirilo/zen-player/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>/*
+ *</p>
+
+<ul>
+<li>ZEN - HTML5-CSS3 Audio Player</li>
+<li>by <a href="https://github.com/simurai" class="user-mention">@simurai</a> (simurai.com)
+*</li>
+<li>Most of this code by: <a href="https://github.com/maboa" class="user-mention">@maboa</a> (happyworm.com)</li>
+<li>and: @quinnirill (niiden.com/jussi/)
+*
+*/</li>
+</ul><p>$(document).ready(function(){    </p>
+
+<pre><code>var status = "stop";
+var dragging = false;
+
+
+
+// init
+
+var player = $("#zen .player");
+
+player.jPlayer({
+        ready: function () {
+        $(this).jPlayer("setMedia", {
+            mp3: "http://storage-new.newjamendo.com/tracks/1039381_96.mp3",
+            mp3: "http://storage-new.newjamendo.com/tracks/1045016_96.mp3",
+            mp3: "http://storage-new.newjamendo.com/tracks/1042147_96.mp3"
+        });
+    },
+    swfPath: "",
+    supplied: "m4a, mp3, oga"         
+});  
+
+
+
+
+
+// preload, update, end
+
+player.bind($.jPlayer.event.progress, function(event) {    
+
+    var audio = $('#zen audio').get(0);
+    var pc = 0;    
+
+    if ((audio.buffered != undefined) &amp;&amp; (audio.buffered.length != 0)) {
+        pc = parseInt(((audio.buffered.end(0) / audio.duration) * 100), 10); 
+        displayBuffered(pc);
+        //console.log(pc);
+        if(pc &gt;= 99) {
+            //console.log("loaded");
+            $('#zen .buffer').addClass("loaded");
+        }  
+    }        
+
+});
+
+//player.bind($.jPlayer.event.loadeddata, function(event) {    
+    //$('#zen .buffer').addClass("loaded");    
+//});
+
+player.bind($.jPlayer.event.timeupdate, function(event) { 
+    var pc = event.jPlayer.status.currentPercentAbsolute;
+    if (!dragging) { 
+        displayProgress(pc);
+    }
+});
+
+player.bind($.jPlayer.event.ended, function(event) {   
+    $('#zen .circle').removeClass( "rotate" );
+    $("#zen").removeClass( "play" );
+    $('#zen .progress').css({rotate: '0deg'});
+    status = "stop";
+});
+
+
+
+
+
+// play/pause
+
+$("#zen .button").bind('mousedown', function() {
+    // not sure if this can be done in a simpler way.
+    // when you click on the edge of the play button, but button scales down and doesn't drigger the click,
+    // so mouseleave is added to still catch it.
+    $(this).bind('mouseleave', function() {
+        $(this).unbind('mouseleave');
+        onClick();
+    });
+});
+
+$("#zen .button").bind('mouseup', function() {
+    $(this).unbind('mouseleave');
+    onClick();
+});
+
+
+function onClick() {        
+
+    if(status != "play") {
+        status = "play";
+        $("#zen").addClass( "play" );
+        player.jPlayer("play");
+    } else {
+        $('#zen .circle').removeClass( "rotate" );
+        $("#zen").removeClass( "play" );
+        status = "pause";
+        player.jPlayer("pause");
+    }
+};
+
+
+
+
+// draggin
+
+var clickControl = $('#zen .drag');
+
+clickControl.grab({
+    onstart: function(){
+        dragging = true;
+        $('#zen .button').css( "pointer-events", "none" );
+
+    }, onmove: function(event){
+        var pc = getArcPc(event.position.x, event.position.y);
+        player.jPlayer("playHead", pc).jPlayer("play");
+        displayProgress(pc);
+
+    }, onfinish: function(event){
+        dragging = false;
+        var pc = getArcPc(event.position.x, event.position.y);
+        player.jPlayer("playHead", pc).jPlayer("play");
+        $('#zen .button').css( "pointer-events", "auto" );
+    }
+}); 
+
+
+
+
+
+
+// functions
+
+function displayProgress(pc) {
+    var degs = pc * 3.6+"deg"; 
+    $('#zen .progress').css({rotate: degs});        
+}
+function displayBuffered(pc) {
+    var degs = pc * 3.6+"deg"; 
+    $('#zen .buffer').css({rotate: degs});      
+}
+
+function getArcPc(pageX, pageY) { 
+    var self    = clickControl,
+        offset  = self.offset(),
+        x   = pageX - offset.left - self.width()/2,
+        y   = pageY - offset.top - self.height()/2,
+        a   = Math.atan2(y,x);  
+
+        if (a &gt; -1*Math.PI &amp;&amp; a &lt; -0.5*Math.PI) {
+       a = 2*Math.PI+a; 
+    } 
+
+    // a is now value between -0.5PI and 1.5PI 
+    // ready to be normalized and applied               
+    var pc = (a + Math.PI/2) / 2*Math.PI * 10;   
+
+    return pc;
+}
+</code></pre>
+
+<p>});
+``</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">zen.js maintained by <a href="https://github.com/ruicirilo">ruicirilo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
